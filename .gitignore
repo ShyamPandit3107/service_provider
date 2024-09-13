@@ -1,0 +1,10 @@
+# Node.js specific files
+/node_modules
+.env
+
+# Prisma migration files (ignore them)
+/prisma/migrations
+
+# Other ignored files
+dist/
+coverage/
