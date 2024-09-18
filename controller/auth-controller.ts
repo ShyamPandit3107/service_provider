@@ -62,11 +62,12 @@ export const registerWithInvite = async (
 ) => {
   try {
     const { email, password, name } = req.body;
-    const inviteToken = req.body.inviteToken;
-    const { role, shopId } = req.user || {};
+    const inviteToken = req.params.inviteToken;
+    const { role, shopId } = req.shop || {};
+    console.log(role);
     const hashedPassword = await bcrypt.hash(password, 10);
     let newUser;
-    if (role == "MANEGER") {
+    if (role == "MANAGER") {
       newUser = await prisma.user.create({
         data: {
           name,

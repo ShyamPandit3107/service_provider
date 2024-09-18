@@ -1,5 +1,3 @@
-// Prisma schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -15,23 +13,30 @@ enum Role {
   EMPLOYEE
 }
 
+enum Status {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
 model User {
   id         String   @id @default(uuid())
   name       String
   email      String   @unique
   password   String
-  role       Role     @default(EMPLOYEE) // Default role is Employee
+  role       Role     @default(OWNER) // Default role is OWNER
   createdAt  DateTime @default(now())
   manager    Manager? // Optional relation to the Manager table
   employee   Employee? // Optional relation to the Employee table
-  shops      Shop[]
+  shops      Shop[]   // A user (owner) can own multiple shops
 }
 
 model Manager {
   id         String   @id @default(uuid())
   userId     String   @unique
   user       User     @relation(fields: [userId], references: [id]) // Relation to User
-  shops      Shop[]   // A manager can manage multiple shops
+  shopId     String   @unique
+  shop       Shop     @relation(fields: [shopId], references: [id]) // Relation to Shop
 }
 
 model Employee {
@@ -42,60 +47,62 @@ model Employee {
 }
 
 model Shop {
-  id         String   @id @default(uuid())
-  name       String
-  address    String
-  phone      String
+  id          String       @id @default(uuid())
+  name        String
+  address     String
+  phone       String
   description String
-  createdAt  DateTime @default(now())
-  ownerId    String
-  owner      User     @relation(fields: [ownerId], references: [id]) // Owner relation
-  managerId  String?
-  manager    Manager? @relation(fields: [managerId], references: [id]) // Optional relation to Manager
-  tasks      Task[]   // A shop has multiple tasks
-  services   Service[] // A shop can have multiple services
-  invites    InviteToken[] // A shop can have multiple invites
+  createdAt   DateTime     @default(now())
+  ownerId     String
+  owner       User         @relation(fields: [ownerId], references: [id]) // Relation to Owner (User)
+  managerId   String?      @unique
+  manager     Manager?
+  tasks       Task[]       // A shop can have multiple tasks
+  services    Service[]    // A shop can offer multiple services
+  invites     InviteToken[] // A shop can have multiple invites
 }
 
 model Task {
-  id         String   @id @default(uuid())
+  id         String     @id @default(uuid())
   title      String
   description String
-  status     String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  status     Status     @default(PENDING)
   shopId     String
-  shop       Shop     @relation(fields: [shopId], references: [id]) // Relation to Shop
+  shop       Shop       @relation(fields: [shopId], references: [id]) // Relation to Shop
   employeeId String?
-  employee   Employee? @relation(fields: [employeeId], references: [id]) // Relation to Employee
+  employee   Employee?  @relation(fields: [employeeId], references: [id]) // Optional relation to Employee
+  verified   Boolean    @default(false)
 }
 
 model Lead {
-  id         String   @id @default(uuid())
+  id         String     @id @default(uuid())
   name       String
   email      String
   phone      String
-  createdAt  DateTime @default(now())
-  services   Service[] // A lead (customer) can have multiple services
+  createdAt  DateTime   @default(now())
+  services   Service[]  // A lead (customer) can have multiple services
 }
 
 model Service {
-  id         String   @id @default(uuid())
+  id         String     @id @default(uuid())
   details    String
   status     String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
   shopId     String
-  shop       Shop     @relation(fields: [shopId], references: [id]) // Relation to Shop
+  shop       Shop       @relation(fields: [shopId], references: [id]) // Relation to Shop
   leadId     String
-  lead       Lead     @relation(fields: [leadId], references: [id]) // Relation to Lead
+  lead       Lead       @relation(fields: [leadId], references: [id]) // Relation to Lead
 }
+
 model InviteToken {
-  id        String   @id @default(uuid())
-  token     String   @unique
-  createdAt DateTime @default(now())
-  expiresAt DateTime
-  role      Role      // Role for the invite (MANAGER or EMPLOYEE)
-  shopId    String
-  shop      Shop     @relation(fields: [shopId], references: [id])
+  id         String     @id @default(uuid())
+  token      String     @unique
+  createdAt  DateTime   @default(now())
+  expiresAt  DateTime
+  role       Role       // Role for the invite (MANAGER or EMPLOYEE)
+  shopId     String
+  shop       Shop       @relation(fields: [shopId], references: [id])
 }

@@ -15,8 +15,8 @@ export const validateInviteToken = async (
     if (!inviteToken) {
       return res.status(401).json({ message: "Invalid token" });
     }
-    req.user = {
-      role: inviteToken.role as "MANEGER" | "EMPLOYEE" | "OWNER",
+    req.shop = {
+      role: inviteToken.role as "MANAGER" | "EMPLOYEE" | "OWNER",
       shopId: inviteToken.shopId,
     };
     return next();
